@@ -51,19 +51,29 @@ class Bank extends EventEmitter {
     });
 
     this.on('withdraw', (uuid, amount) => {
-      const targetPerson = this._validateExistingPerson(uuid, 'Decreasing balance');
+      const targetPerson = this._validateExistingPerson(uuid, 'Withdrawing');
 
       if (!targetPerson) return;
 
       if (typeof amount !== 'number' || amount <= 0) {
-        this.emit('error', `Decreasing balance - the amount is incorrect ${amount}`);
+        this.emit('error', `Withdrawing - the amount is incorrect ${amount}`);
+        return;
+      }
+
+      if (
+        !this._isLimitValid({
+          person: targetPerson,
+          amount,
+          phase: 'Withdrawing',
+        })
+      ) {
         return;
       }
 
       if (targetPerson.balance - amount < 0) {
         this.emit(
           'error',
-          `Decreasing balance - the amount you want to decrease is more than your have in you account`,
+          `Withdrawing - the amount you want to withdraw is more than your have in you account`,
         );
         return;
       }
@@ -87,6 +97,16 @@ class Bank extends EventEmitter {
         return;
       }
 
+      if (
+        !this._isLimitValid({
+          person: fromPerson,
+          amount,
+          phase: 'Sending',
+        })
+      ) {
+        return;
+      }
+
       this.persons = {
         ...this.persons,
         [fromUuid]: {
@@ -96,6 +116,20 @@ class Bank extends EventEmitter {
         [toUuid]: {
           ...toPerson,
           balance: toPerson.balance + amount,
+        },
+      };
+    });
+
+    this.on('changeLimit', (uuid, limit) => {
+      const targetPerson = this._validateExistingPerson(uuid, 'Changing limit');
+
+      if (!targetPerson) return;
+
+      this.persons = {
+        ...this.persons,
+        [uuid]: {
+          ...targetPerson,
+          limit,
         },
       };
     });
@@ -128,6 +162,17 @@ class Bank extends EventEmitter {
 
       isValid = false;
     }
+    return isValid;
+  }
+
+  _isLimitValid({ person, amount, phase }) {
+    let isValid = true;
+    const updatedBalance = person.balance - amount;
+
+    if (person.limit && !person.limit(amount, person.balance, updatedBalance)) {
+      this.emit('error', `${phase} - limit error`);
+      isValid = false;
+    }
 
     return isValid;
   }
@@ -152,18 +197,14 @@ bank.on('error', (error) => {
 
 const personOneId = bank.register({
   name: 'Pitter Black',
-  balance: 100,
+  balance: 600,
+  limit: (amount) => amount <= 50,
 });
 
 const personTwoId = bank.register({
   name: 'Jon Snow',
   balance: 500,
 });
-
-bank.emit('add', personOneId, 50);
-bank.emit('withdraw', personOneId, 10);
-bank.emit('add', personTwoId, 100);
-bank.emit('withdraw', personTwoId, 20);
 
 bank.emit('get', personOneId, (balance) => {
   console.log(`I have $${balance}`);
@@ -172,6 +213,17 @@ bank.emit('get', personTwoId, (balance) => {
   console.log(`I have $${balance}`);
 });
 
-bank.emit('send', personOneId, personTwoId, 50);
+bank.emit('add', personOneId, 50);
+bank.emit('withdraw', personOneId, 30);
+bank.emit('add', personTwoId, 100);
+bank.emit('withdraw', personTwoId, 20);
+
+bank.emit('send', personOneId, personTwoId, 30);
+
+bank.emit('changeLimit', personOneId, (amount, currentBalance, updatedBalance) => {
+  return amount < 150 && updatedBalance > 400 && currentBalance > 500;
+});
+
+bank.emit('send', personOneId, personTwoId, 100);
 
 console.log('persons', bank.persons);

@@ -70,6 +70,35 @@ class Bank extends EventEmitter {
 
       this._changeBalance(targetPerson, -amount);
     });
+
+    this.on('send', (fromUuid, toUuid, amount) => {
+      const fromPerson = this._validateExistingPerson(fromUuid, 'Sending money');
+      const toPerson = this._validateExistingPerson(toUuid, 'Retrieving money');
+
+      if (!fromPerson || !toPerson) return;
+
+      if (typeof amount !== 'number' || amount <= 0) {
+        this.emit('error', `Sending - the amount is incorrect ${amount}`);
+        return;
+      }
+
+      if (fromPerson.balance - amount < 0) {
+        this.emit('error', `Sending - you don't have enough money on your account`);
+        return;
+      }
+
+      this.persons = {
+        ...this.persons,
+        [fromUuid]: {
+          ...fromPerson,
+          balance: fromPerson.balance - amount,
+        },
+        [toUuid]: {
+          ...toPerson,
+          balance: toPerson.balance + amount,
+        },
+      };
+    });
   }
 
   _changeBalance(targetPerson, amount) {
@@ -142,5 +171,7 @@ bank.emit('get', personOneId, (balance) => {
 bank.emit('get', personTwoId, (balance) => {
   console.log(`I have $${balance}`);
 });
+
+bank.emit('send', personOneId, personTwoId, 50);
 
 console.log('persons', bank.persons);

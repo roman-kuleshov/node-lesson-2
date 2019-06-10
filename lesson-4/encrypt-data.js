@@ -1,13 +1,12 @@
-// const fs = require('fs');
-const util = require('util');
 const { pipeline: defaultPipeline } = require('stream');
+const util = require('util');
 const pipeline = util.promisify(defaultPipeline);
 
-const UI = require('./UI');
-const Guardian = require('./Guardian');
-const AccountManager = require('./AccountManager');
-const Logger = require('./Logger');
-const DB = require('./DB');
+const UI = require('./modules/UI');
+const Guardian = require('./modules/Guardian');
+const AccountManager = require('./modules/AccountManager');
+const Logger = require('./modules/Logger');
+const DB = require('./modules/DB');
 
 const customers = [
   {

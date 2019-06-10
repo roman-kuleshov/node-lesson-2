@@ -1,5 +1,5 @@
 const { Transform } = require('stream');
-const { stringToHex } = require('./utils');
+const { stringToHex } = require('../utils');
 
 class Guardian extends Transform {
   constructor(options = {}) {

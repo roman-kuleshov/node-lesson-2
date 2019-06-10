@@ -6,6 +6,8 @@ const pipeline = util.promisify(defaultPipeline);
 const UI = require('./UI');
 const Guardian = require('./Guardian');
 const AccountManager = require('./AccountManager');
+const Logger = require('./Logger');
+const DB = require('./DB');
 
 const customers = [
   {
@@ -31,12 +33,15 @@ const options = {
 const ui = new UI(customers, options);
 const guardian = new Guardian(options);
 const manager = new AccountManager(options);
+const db = new DB();
+const logger = new Logger(options, db);
 
 async function start() {
   try {
-    const result = await pipeline(ui, guardian, manager);
+    const result = await pipeline(ui, guardian, logger, manager);
 
     console.log('Result', result);
+    console.log('DB', db.data);
   } catch (err) {
     console.log('Error', err);
   }

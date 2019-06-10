@@ -22,7 +22,6 @@ class Guardian extends Transform {
       },
     };
 
-    console.log(updatedChunk);
     this.push(updatedChunk);
     done();
   }

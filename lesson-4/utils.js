@@ -10,7 +10,17 @@ const hexToString = (hex) => {
   return str;
 };
 
+const sum = (a) => {
+  return a + a;
+};
+
+const multiply = (a) => {
+  return a * a;
+};
+
 module.exports = {
   stringToHex,
   hexToString,
+  sum,
+  multiply,
 };

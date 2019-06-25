@@ -7,12 +7,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest && codecov -t bcd0997f-9c11-403d-bda4-310079360fe0"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "prettier": "^1.17.1",
     "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "codecov": "^3.5.0",
+    "cross-env": "^5.2.0",
+    "jest": "^24.8.0"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true
   }
 }

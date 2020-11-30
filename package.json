@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "prettier": "^1.17.1",
+    "prettier": "^2.2.1",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
